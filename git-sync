@@ -34,6 +34,9 @@
 # 0, sync can start immediately. This does not, however, indicate
 # that syncing is at all likely to succeed.
 
+set -euo pipefail
+IFS=$'\n\t'
+
 # command used to auto-commit file modifications
 DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"%message\";"
 
