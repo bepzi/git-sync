@@ -158,12 +158,12 @@ check_initial_file_state()
     syncNew="$(git config --get --bool branch.$branch_name.syncNewFiles)"
     if [[ "true" == "$syncNew" || "true" == "$sync_new_files_anyway" ]]; then
         # allow for new files
-        if [ -n "$(git status --porcelain | grep -E '^[^ \?][^M\?] *')" ]; then
+        if git status --porcelain | grep -E -q '^[^ \?][^M\?] *'; then
             echo "NonNewOrModified"
         fi
     else
         # also bail on new files
-        if [ -n "$(git status --porcelain | grep -E '^[^ ][^M] *')" ]; then
+        if git status --porcelain | grep -E -q '^[^ ][^M] *'; then
             echo "NotOnlyModified"
         fi
     fi
@@ -173,7 +173,7 @@ check_initial_file_state()
 # used to decide if autocommit should be invoked
 local_changes()
 {
-    if [ -n "$(git status --porcelain | grep -E '^(\?\?|[MARC] |[ MARC][MD])*')" ]; then
+    if git status --porcelain | grep -E -q '^(\?\?|[MARC] |[ MARC][MD])*'; then
         echo "LocalChanges"
     fi
 }
