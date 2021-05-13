@@ -106,7 +106,8 @@ __gitdir()
 # echos repo state
 git_repo_state ()
 {
-    local g="$(__gitdir)"
+    local g
+    g="$(__gitdir)"
     if [ -n "$g" ]; then
         if [ -f "$g/rebase-merge/interactive" ]; then
             echo "REBASE-i"
@@ -153,7 +154,8 @@ git_repo_state ()
 # check if we only have untouched, modified or (if configured) new files
 check_initial_file_state()
 {
-    local syncNew="$(git config --get --bool branch.$branch_name.syncNewFiles)"
+    local syncNew
+    syncNew="$(git config --get --bool branch.$branch_name.syncNewFiles)"
     if [[ "true" == "$syncNew" || "true" == "$sync_new_files_anyway" ]]; then
         # allow for new files
         if [ ! -z "$(git status --porcelain | grep -E '^[^ \?][^M\?] *')" ]; then
@@ -179,7 +181,8 @@ local_changes()
 # determine sync state of repository, i.e. how the remote relates to our HEAD
 sync_state()
 {
-    local count="$(git rev-list --count --left-right $remote_name/$branch_name...HEAD)"
+    local count
+    count="$(git rev-list --count --left-right $remote_name/$branch_name...HEAD)"
 
     case "$count" in
         "") # no upstream
