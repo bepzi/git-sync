@@ -92,7 +92,7 @@ shift $((OPTIND-1))
 
 __log_msg()
 {
-    echo git-sync: $1
+    echo git-sync: "$1"
 }
 
 # echo the git dir
@@ -329,7 +329,7 @@ if [ ! -z "$(local_changes)" ]; then
     autocommit_cmd=$(echo "$autocommit_cmd" | sed "s/%message/$commit_msg/")
 
     __log_msg "Committing local changes using ${autocommit_cmd}"
-    eval $autocommit_cmd
+    eval "$autocommit_cmd"
 
     # after autocommit, we should be clean
     rstate="$(git_repo_state)"
@@ -342,7 +342,7 @@ fi
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
 __log_msg "Fetching from $remote_name/$branch_name"
-git fetch $remote_name $branch_name
+git fetch "$remote_name" "$branch_name"
 if [ $? != 0 ] ; then
     __log_msg "git fetch $remote_name returned non-zero. Likely a network problem; exiting."
     exit 3
@@ -358,7 +358,7 @@ case "$(sync_state)" in
         ;;
     "ahead")
         __log_msg "Pushing changes..."
-        git push $remote_name $branch_name:$branch_name
+        git push "$remote_name" "$branch_name":"$branch_name"
         if [ $? == 0 ]; then
             exit_assuming_sync
         else
@@ -368,7 +368,7 @@ case "$(sync_state)" in
         ;;
     "behind")
         __log_msg "We are behind, fast-forwarding..."
-        git merge --ff --ff-only $remote_name/$branch_name
+        git merge --ff --ff-only "$remote_name"/"$branch_name"
         if [ $? == 0 ]; then
             exit_assuming_sync
         else
@@ -378,10 +378,10 @@ case "$(sync_state)" in
         ;;
     "diverged")
         __log_msg "We have diverged. Trying to rebase..."
-        git rebase $remote_name/$branch_name
+        git rebase "$remote_name"/"$branch_name"
         if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
             __log_msg "Rebasing went fine, pushing..."
-            git push $remote_name $branch_name:$branch_name
+            git push "$remote_name" "$branch_name":"$branch_name"
             exit_assuming_sync
         else
             __log_msg "Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
