@@ -155,7 +155,7 @@ git_repo_state ()
 check_initial_file_state()
 {
     local syncNew
-    syncNew="$(git config --get --bool branch.$branch_name.syncNewFiles)"
+    syncNew=$(git config --get --bool branch."$branch_name".syncNewFiles)
     if [[ "true" == "$syncNew" || "true" == "$sync_new_files_anyway" ]]; then
         # allow for new files
         if git status --porcelain | grep -E -q '^[^ \?][^M\?] *'; then
@@ -182,7 +182,7 @@ local_changes()
 sync_state()
 {
     local count
-    count="$(git rev-list --count --left-right $remote_name/$branch_name...HEAD)"
+    count="$(git rev-list --count --left-right "$remote_name"/"$branch_name"...HEAD)"
 
     case "$count" in
         "") # no upstream
@@ -247,12 +247,12 @@ if [ -z "$branch_name" ] ; then
 fi
 
 # while at it, determine the remote to operate on
-remote_name=$(git config --get branch.$branch_name.pushRemote)
+remote_name=$(git config --get branch."$branch_name".pushRemote)
 if [ -z "$remote_name" ] ; then
     remote_name=$(git config --get remote.pushDefault)
 fi
 if [ -z "$remote_name" ] ; then
-    remote_name=$(git config --get branch.$branch_name.remote)
+    remote_name=$(git config --get branch."$branch_name".remote)
 fi
 
 if [ -z "$remote_name" ] ; then
@@ -268,7 +268,7 @@ if [ -z "$remote_name" ] ; then
 fi
 
 # check if current branch is configured for sync
-if [[ "true" != "$(git config --get --bool branch.$branch_name.sync)" && "true" != "$sync_anyway" ]] ; then
+if [[ "true" != "$(git config --get --bool branch."$branch_name".sync)" && "true" != "$sync_anyway" ]] ; then
     echo
     __log_msg "Please use"
     echo
@@ -314,18 +314,18 @@ fi
 # check if we have to commit local changes, if yes, do so
 if [ -n "$(local_changes)" ]; then
     autocommit_cmd=""
-    config_autocommit_cmd="$(git config --get branch.$branch_name.autocommitscript)"
+    config_autocommit_cmd="$(git config --get branch."$branch_name".autocommitscript)"
 
     # discern the three ways to auto-commit
     if [ -n "$config_autocommit_cmd" ]; then
         autocommit_cmd="$config_autocommit_cmd"
-    elif [[ "true" == "$(git config --get --bool branch.$branch_name.syncNewFiles)" || "true" == "$sync_new_files_anyway" ]]; then
+    elif [[ "true" == "$(git config --get --bool branch."$branch_name".syncNewFiles)" || "true" == "$sync_new_files_anyway" ]]; then
         autocommit_cmd=${ALL_AUTOCOMMIT_CMD}
     else
         autocommit_cmd=${DEFAULT_AUTOCOMMIT_CMD}
     fi
 
-    commit_msg="$(git config --get branch.$branch_name.syncCommitMsg)"
+    commit_msg="$(git config --get branch."$branch_name".syncCommitMsg)"
     if [ "" == "$commit_msg" ]; then
         commit_msg=${DEFAULT_AUTOCOMMIT_MSG}
     fi
@@ -345,6 +345,7 @@ fi
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
 __log_msg "Fetching from $remote_name/$branch_name"
+
 if ! git fetch "$remote_name" "$branch_name"; then
     __log_msg "git fetch $remote_name returned non-zero. Likely a network problem; exiting."
     exit 3
