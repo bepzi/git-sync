@@ -68,15 +68,19 @@ sync_anyway="false"
 
 while getopts "hns" opt ; do
     case $opt in
-        h )
+        h)
             print_usage
             exit 0
             ;;
-        n )
+        n)
             sync_new_files_anyway="true"
             ;;
-        s )
+        s)
             sync_anyway="true"
+            ;;
+        *)
+            print_usage
+            exit 1
             ;;
     esac
 done
