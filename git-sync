@@ -345,8 +345,7 @@ fi
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
 __log_msg "Fetching from $remote_name/$branch_name"
-git fetch "$remote_name" "$branch_name"
-if [ $? != 0 ] ; then
+if ! git fetch "$remote_name" "$branch_name"; then
     __log_msg "git fetch $remote_name returned non-zero. Likely a network problem; exiting."
     exit 3
 fi
@@ -361,8 +360,7 @@ case "$(sync_state)" in
         ;;
     "ahead")
         __log_msg "Pushing changes..."
-        git push "$remote_name" "$branch_name":"$branch_name"
-        if [ $? == 0 ]; then
+        if git push "$remote_name" "$branch_name":"$branch_name"; then
             exit_assuming_sync
         else
             __log_msg "git push returned non-zero. Likely a connection failure."
@@ -371,8 +369,7 @@ case "$(sync_state)" in
         ;;
     "behind")
         __log_msg "We are behind, fast-forwarding..."
-        git merge --ff --ff-only "$remote_name"/"$branch_name"
-        if [ $? == 0 ]; then
+        if git merge --ff --ff-only "$remote_name"/"$branch_name"; then
             exit_assuming_sync
         else
             __log_msg "git merge --ff --ff-only returned non-zero ($?). Exiting."
@@ -381,8 +378,7 @@ case "$(sync_state)" in
         ;;
     "diverged")
         __log_msg "We have diverged. Trying to rebase..."
-        git rebase "$remote_name"/"$branch_name"
-        if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
+        if git rebase "$remote_name"/"$branch_name" && [[ -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]]; then
             __log_msg "Rebasing went fine, pushing..."
             git push "$remote_name" "$branch_name":"$branch_name"
             exit_assuming_sync
